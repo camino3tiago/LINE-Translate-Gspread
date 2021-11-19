@@ -150,6 +150,14 @@ def handle_message(event):
 
     text = event.message.text
 
+    worksheet = auth()
+    cell = worksheet.find(text)
+    if cell:
+        print(f'値:{cell.value}、列のindex:{cell.col}、行のindex:{cell.row}')
+    else:
+        print('すでに翻訳したことがあります。')
+
+    # 指定された言語の復習クイズを出す
     if text in langs:
         preview_quiz = quiz(text)
 
@@ -157,16 +165,30 @@ def handle_message(event):
             event.reply_token,  # イベントの応答に用いるトークン
             TextSendMessage(text=f'{text}の復習です！！\n\n{preview_quiz}')    
         )
-
     else:
 
-        # 翻訳したものを返す
-        translated = trans(text)
+        worksheet = auth()
+        cell = worksheet.find(text) # すでにスプレッドシートにあるか確認
+        if cell:
+            result = worksheet.row_values(cell.row)
+            translated = []
+            for i,j in enumerate(result):
+                translated.append(f"{langs[i]}: {j}")
+            translated = "\n\n".join(translated)
 
-        line_bot_api.reply_message(
-            event.reply_token,  # イベントの応答に用いるトークン
-            TextSendMessage(text=translated)    
-        )
+            line_bot_api.reply_message(
+                event.reply_token,  # イベントの応答に用いるトークン
+                TextSendMessage(text=f'前にも調べていますよー。\n\n{translated}')    
+            )
+
+        else:
+            # 翻訳したものを返す
+            translated = trans(text)
+
+            line_bot_api.reply_message(
+                event.reply_token,  # イベントの応答に用いるトークン
+                TextSendMessage(text=translated)    
+            )
 
 if __name__ == "__main__":
     port = os.getenv("PORT")    # Heroku上にある環境変数
