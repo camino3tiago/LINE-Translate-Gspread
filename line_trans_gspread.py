@@ -149,10 +149,10 @@ def handle_message(event):
 
     worksheet = auth()
     cell = worksheet.find(text)
-    if cell:
-        print(f'値:{cell.value}、列のindex:{cell.col}、行のindex:{cell.row}')
-    else:
-        print('すでに翻訳したことがあります。')
+    # if cell:
+    #     print(f'値:{cell.value}、列のindex:{cell.col}、行のindex:{cell.row}')
+    # else:
+    #     print('すでに翻訳したことがあります。')
 
     # 指定された言語の復習クイズを出す
     if text in langs:
