@@ -104,10 +104,9 @@ class GSSWorksheet():
         trans_list = "\n\n".join(trans_list)
 
         # 翻訳結果をスプレッドシートに入力する
-        worksheet = self.auth()
-        df = pd.DataFrame(worksheet.get_all_records())
+        df = pd.DataFrame(self.worksheet.get_all_records())
         df = df.append({'日本語': sp_list[0], '英語': sp_list[1], 'スペイン語': sp_list[2], 'カタルーニャ語': sp_list[3], 'イタリア語': sp_list[4], 'ポルトガル語': sp_list[5], 'フランス語': sp_list[6]}, ignore_index=True)
-        worksheet.update([df.columns.values.tolist()]+df.values.tolist())
+        self.worksheet.update([df.columns.values.tolist()]+df.values.tolist())
 
         return trans_list
 
@@ -115,8 +114,7 @@ class GSSWorksheet():
     def quiz(self, text):
         
         col = langs.index(text) + 1 # 指定した言語列
-        worksheet = self.auth()
-        quiz_lang = worksheet.col_values(col)
+        quiz_lang = self.worksheet.col_values(col)
 
         import random
         quiz_list = random.sample(quiz_lang[1:], 3)
@@ -206,7 +204,6 @@ def handle_message(event):
 
     else:
 
-        worksheet = worksheet.auth()
         cell = worksheet.find(text) # すでにスプレッドシートにあるか確認
         if cell:
             result = worksheet.row_values(cell.row)
