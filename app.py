@@ -1,3 +1,4 @@
+"""
 # 環境変数読み込み準備
 import os
 from dotenv import load_dotenv
@@ -81,16 +82,6 @@ class GSSWorksheet():
     sp_list = []
 
     def trans(self, text):
-        lang_dict = {
-            "ja": "日本語",
-            "en": "English",
-            "es": "Español",
-            "ca": "Català",
-            "it": "Italiano",
-            "pt": "Português",
-            'fr': 'Français',
-        }
-
         # detected = translator.detect(text)  # 何語のテキストか判定
         # print(f"{lang_dict[detected.lang].title()}: {text}\n--------------------")
         trans_list = []
@@ -112,7 +103,6 @@ class GSSWorksheet():
 
     # テキストが言語名であれば、クイズを出す
     def quiz(self, text):
-        
         col = langs.index(text) + 1 # 指定した言語列
         quiz_lang = self.worksheet.col_values(col)
 
@@ -201,9 +191,7 @@ def handle_message(event):
             event.reply_token,  # イベントの応答に用いるトークン
             TextSendMessage(text=f'{text}の復習です！！\n\n{preview_quiz}')    
         )
-
     else:
-
         cell = worksheet.find(text) # すでにスプレッドシートにあるか確認
         if cell:
             result = worksheet.row_values(cell.row)
@@ -243,6 +231,7 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
 
 """
+
 # 環境変数読み込み準備
 import os
 from dotenv import load_dotenv
@@ -440,6 +429,3 @@ def handle_message(event):
 if __name__ == "__main__":
     port = os.getenv("PORT")    # Heroku上にある環境変数
     app.run(host="0.0.0.0", port=port)
-
-
-"""
