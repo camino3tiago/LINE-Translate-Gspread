@@ -90,8 +90,13 @@ class GSSWorksheet():
     def delete_worksheet(self):
         gc.del_worksheet(self.worksheet)
 
-    # def input_text(self):
-    #     self.worksheet.update_cell(self.last_row(), self.JA, )
+    def input_to_sheet(self, list):
+        # cell_list = self.worksheet.range(self.last_row(), 1, self.last_row(), 7)
+        # for i,j in enumerate(list):
+        #     cell_list[i + 1].value = j
+        # self.worksheet.update_cells(cell_list)
+        self.worksheet.append(list)
+        # self.worksheet.update_cell(self.last_row(), self.JA, )
 
 
 
@@ -110,11 +115,13 @@ class GSSWorksheet():
             trans_list.append(f"{language.title()}:  {translated.text}")
             sp_list.append(translated.text)
         trans_list = "\n\n".join(trans_list)
+        print(sp_list)
 
         # 翻訳結果をスプレッドシートに入力する
-        df = pd.DataFrame(self.worksheet.get_all_records())
-        df = df.append({'日本語': sp_list[0], 'English': sp_list[1], 'Español': sp_list[2], 'Català': sp_list[3], 'Italiano': sp_list[4], 'Português': sp_list[5], 'Français': sp_list[6]}, ignore_index=True)
-        self.worksheet.update([df.columns.values.tolist()] + df.values.tolist())
+        self.input_to_sheet(sp_list)
+        # df = pd.DataFrame(self.worksheet.get_all_records())
+        # df = df.append({'日本語': sp_list[0], 'English': sp_list[1], 'Español': sp_list[2], 'Català': sp_list[3], 'Italiano': sp_list[4], 'Português': sp_list[5], 'Français': sp_list[6]}, ignore_index=True)
+        # self.worksheet.update([df.columns.values.tolist()] + df.values.tolist())
 
         return trans_list
 
@@ -195,7 +202,7 @@ def handle_message(event):
         worksheet = worksheets[profile.user_id]
     except KeyError:
         # 辞書にインスタンスが登録されていなければ、もう一度登録する
-        worksheets[profile.user_id] = GSSWorksheet(profile.user_id)
+        worksheets[profile.user_id] = GSSWorksheet(profile.display_name)
         worksheet = worksheets[profile.user_id]
     
 
