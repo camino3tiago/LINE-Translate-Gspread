@@ -96,6 +96,7 @@ class GSSWorksheet():
         #     cell_list[i + 1].value = j
         # self.worksheet.update_cells(cell_list)
         self.worksheet.append(list)
+        return self.worksheet
         # self.worksheet.update_cell(self.last_row(), self.JA, )
 
 
@@ -205,14 +206,18 @@ def handle_message(event):
         worksheets[profile.user_id] = GSSWorksheet(profile.display_name)
         worksheet = worksheets[profile.user_id]
     
+    line_bot_api.reply_message(
+        event.reply_token,  # イベントの応答に用いるトークン
+        TextSendMessage(text="{text}\n\n")    
+    )
 
     # 指定された言語の復習クイズを出す
     if text in langs:
-        preview_quiz = worksheet.quiz(text)
+        review_quiz = worksheet.quiz(text)
 
         line_bot_api.reply_message(
             event.reply_token,  # イベントの応答に用いるトークン
-            TextSendMessage(text=f'{text}の復習です！！\n\n{preview_quiz}')    
+            TextSendMessage(text=f'{text}の復習です！！\n\n{review_quiz}')    
         )
     else:
         cell = worksheet.find(text) # すでにスプレッドシートにあるか確認
