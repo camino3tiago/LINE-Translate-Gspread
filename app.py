@@ -206,10 +206,26 @@ def handle_message(event):
         worksheets[profile.user_id] = GSSWorksheet(profile.display_name)
         worksheet = worksheets[profile.user_id]
     
-    line_bot_api.reply_message(
-        event.reply_token,  # イベントの応答に用いるトークン
-        TextSendMessage(text="{text}\n\n")    
-    )
+    cell = worksheet.find(text) # すでにスプレッドシートにあるか確認
+    if cell:
+        result = worksheet.row_values(cell.row) # スプレッドシートにあれば、その行を取り出し
+        translated = []
+        for i,j in enumerate(result):
+            translated.append(f"{langs[i]}: {j}")
+        translated = "\n\n".join(translated)
+
+        line_bot_api.reply_message(
+            event.reply_token,  # イベントの応答に用いるトークン
+            TextSendMessage(text=f'前にも調べていますよー。\n\n{translated}')    
+        )
+    else:
+        # 翻訳したものを返す
+        translated = worksheet.trans(text)  # trans()では、スプレッドシートへの書き込みも行う
+
+        line_bot_api.reply_message(
+            event.reply_token,  # イベントの応答に用いるトークン
+            TextSendMessage(text=translated)    
+        )
 
     # 指定された言語の復習クイズを出す
     if text in langs:
@@ -219,27 +235,27 @@ def handle_message(event):
             event.reply_token,  # イベントの応答に用いるトークン
             TextSendMessage(text=f'{text}の復習です！！\n\n{review_quiz}')    
         )
-    else:
-        cell = worksheet.find(text) # すでにスプレッドシートにあるか確認
-        if cell:
-            result = worksheet.row_values(cell.row) # スプレッドシートにあれば、その行を取り出し
-            translated = []
-            for i,j in enumerate(result):
-                translated.append(f"{langs[i]}: {j}")
-            translated = "\n\n".join(translated)
+    # else:
+    #     cell = worksheet.find(text) # すでにスプレッドシートにあるか確認
+    #     if cell:
+    #         result = worksheet.row_values(cell.row) # スプレッドシートにあれば、その行を取り出し
+    #         translated = []
+    #         for i,j in enumerate(result):
+    #             translated.append(f"{langs[i]}: {j}")
+    #         translated = "\n\n".join(translated)
 
-            line_bot_api.reply_message(
-                event.reply_token,  # イベントの応答に用いるトークン
-                TextSendMessage(text=f'前にも調べていますよー。\n\n{translated}')    
-            )
-        else:
-            # 翻訳したものを返す
-            translated = worksheet.trans(text)  # trans()では、スプレッドシートへの書き込みも行う
+    #         line_bot_api.reply_message(
+    #             event.reply_token,  # イベントの応答に用いるトークン
+    #             TextSendMessage(text=f'前にも調べていますよー。\n\n{translated}')    
+    #         )
+    #     else:
+    #         # 翻訳したものを返す
+    #         translated = worksheet.trans(text)  # trans()では、スプレッドシートへの書き込みも行う
 
-            line_bot_api.reply_message(
-                event.reply_token,  # イベントの応答に用いるトークン
-                TextSendMessage(text=translated)    
-            )
+    #         line_bot_api.reply_message(
+    #             event.reply_token,  # イベントの応答に用いるトークン
+    #             TextSendMessage(text=translated)    
+    #         )
 
 
 @handler.add(FollowEvent)
