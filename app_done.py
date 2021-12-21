@@ -1,6 +1,4 @@
-# app.pyコピー（ユーザー別ワークシート　実装用）
-
-
+"""
 # 環境変数読み込み準備
 import os
 from dotenv import load_dotenv
@@ -53,7 +51,7 @@ class GSSWorksheet():
         gc = gspread.authorize(credentials)
 
         # ここから要確認！！-------------------------------------------------------------------
-        gc = gc.open("LANG")#操作するスプレッドシートを指定する
+        gc = gc.open("mySheet")#操作するスプレッドシートを指定する
 
         try :
             #新たにワークシートを作成し、Worksheetオブジェクトをworksheetに格納します。
@@ -220,7 +218,7 @@ def handle_message(event):
 def handle_follow(event):
     profile = line_bot_api.get_profile(event.source.user_id)
 
-    # 友達登録時に、新しいworksheetのインスタンスを生成し、辞書に格納する
+    # 友達登録じに、新しいworksheetのインスタンスを生成し、辞書に格納する
     worksheets[profile.user_id] = GSSWorksheet(profile.display_name)
 
     line_bot_api.reply_message(
@@ -231,8 +229,6 @@ def handle_follow(event):
 if __name__ == "__main__":
     port = os.getenv("PORT")    # Heroku上にある環境変数
     app.run(host="0.0.0.0", port=port)
-
-
 
 """
 
@@ -433,5 +429,3 @@ def handle_message(event):
 if __name__ == "__main__":
     port = os.getenv("PORT")    # Heroku上にある環境変数
     app.run(host="0.0.0.0", port=port)
-
-"""
