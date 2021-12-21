@@ -15,20 +15,20 @@ from oauth2client.service_account import ServiceAccountCredentials
 from googletrans import Translator
 translator = Translator()
 
-sp_list = []
-lang_dict = {
-    "ja": "日本語",
-    "en": "English",
-    "es": "Español",
-    "ca": "Català",
-    "it": "Italiano",
-    "pt": "Português",
-    'fr': 'Français',
-}
-
 langs = ['日本語', '英語', 'スペイン語', 'カタルーニャ語', 'イタリア語', 'ポルトガル語', 'フランス語']
 
 class GSSWorksheet():
+
+    lang_dict = {
+        "ja": "日本語",
+        "en": "English",
+        "es": "Español",
+        "ca": "Català",
+        "it": "Italiano",
+        "pt": "Português",
+        'fr': 'Français',
+    }
+
     def __init__(self, title):
         SP_CREDENTIAL_FILE = {
             "type": "service_account",
@@ -101,18 +101,17 @@ class GSSWorksheet():
 
 
 
-    # 翻訳部分
-    sp_list = []
+
 
     def trans(self, text):
         # detected = translator.detect(text)  # 何語のテキストか判定
         # print(f"{lang_dict[detected.lang].title()}: {text}\n--------------------")
-        trans_list = []
+        trans_list = []     # 翻訳したものを入れる
         sp_list = []        # Spread sheet用の言語リスト
 
         try:
             # 一言語ずつ取り出して、翻訳する
-            for lang, language in lang_dict.items():
+            for lang, language in self.lang_dict.items():
                 translated = translator.translate(text, dest=lang)  # 翻訳する
                 trans_list.append(f"{language.title()}:  {translated.text}")
                 sp_list.append(translated.text)
