@@ -1,6 +1,4 @@
-# app.pyコピー（ユーザー別ワークシート　実装用）
-
-
+"""
 # 環境変数読み込み準備
 import os
 from dotenv import load_dotenv
@@ -15,20 +13,20 @@ from oauth2client.service_account import ServiceAccountCredentials
 from googletrans import Translator
 translator = Translator()
 
+sp_list = []
+lang_dict = {
+    "ja": "日本語",
+    "en": "English",
+    "es": "Español",
+    "ca": "Català",
+    "it": "Italiano",
+    "pt": "Português",
+    'fr': 'Français',
+}
+
 langs = ['日本語', '英語', 'スペイン語', 'カタルーニャ語', 'イタリア語', 'ポルトガル語', 'フランス語']
 
 class GSSWorksheet():
-
-    lang_dict = {
-        "ja": "日本語",
-        "en": "English",
-        "es": "Español",
-        "ca": "Català",
-        "it": "Italiano",
-        "pt": "Português",
-        'fr': 'Français',
-    }
-
     def __init__(self, title):
         SP_CREDENTIAL_FILE = {
             "type": "service_account",
@@ -50,12 +48,10 @@ class GSSWorksheet():
         ]
 
         credentials = ServiceAccountCredentials.from_json_keyfile_dict(SP_CREDENTIAL_FILE, SP_SCOPE)    # 認証情報すり合わせ
-        
-        global gc
         gc = gspread.authorize(credentials)
 
         # ここから要確認！！-------------------------------------------------------------------
-        gc = gc.open("LANG")#操作するスプレッドシートを指定する
+        gc = gc.open("mySheet")#操作するスプレッドシートを指定する
 
         try :
             #新たにワークシートを作成し、Worksheetオブジェクトをworksheetに格納します。
@@ -81,48 +77,27 @@ class GSSWorksheet():
         self.worksheet.update_cell(1, self.PT, "Português")                
         self.worksheet.update_cell(1, self.FR, "Français")
 
-    def last_row(self):
-        row_count = 1
-        while self.worksheet.cell(row_count, self.JA).value != "":
-            row_count += 1
-        return row_count
 
-    def delete_worksheet(self):
-        gc.del_worksheet(self.worksheet)
-
-    def input_to_sheet(self, list):
-        # cell_list = self.worksheet.range(self.last_row(), 1, self.last_row(), 7)
-        # for i,j in enumerate(list):
-        #     cell_list[i + 1].value = j
-        # self.worksheet.update_cells(cell_list)
-        self.worksheet.append(list)
-        return self.worksheet
-        # self.worksheet.update_cell(self.last_row(), self.JA, )
-
-
-
-
+    # 翻訳部分
+    sp_list = []
 
     def trans(self, text):
         # detected = translator.detect(text)  # 何語のテキストか判定
         # print(f"{lang_dict[detected.lang].title()}: {text}\n--------------------")
-        trans_list = []     # 翻訳したものを入れる
+        trans_list = []
         sp_list = []        # Spread sheet用の言語リスト
 
-        try:
-            # 一言語ずつ取り出して、翻訳する
-            for lang, language in self.lang_dict.items():
-                translated = translator.translate(text, dest=lang)  # 翻訳する
-                trans_list.append(f"{language.title()}:  {translated.text}")
-                sp_list.append(translated.text)
-            trans_list = "\n\n".join(trans_list)
-            self.worksheet.append(sp_list)
-        except:
-            trans_list = "翻訳できませんでした..."
+        # 一言語ずつ取り出して、翻訳する
+        for lang, language in lang_dict.items():
+            translated = translator.translate(text, dest=lang)  # 翻訳する
+            trans_list.append(f"{language.title()}:  {translated.text}")
+            sp_list.append(translated.text)
+        trans_list = "\n\n".join(trans_list)
+
         # 翻訳結果をスプレッドシートに入力する
-        # df = pd.DataFrame(self.worksheet.get_all_records())
-        # df = df.append({'日本語': sp_list[0], 'English': sp_list[1], 'Español': sp_list[2], 'Català': sp_list[3], 'Italiano': sp_list[4], 'Português': sp_list[5], 'Français': sp_list[6]}, ignore_index=True)
-        # self.worksheet.update([df.columns.values.tolist()] + df.values.tolist())
+        df = pd.DataFrame(self.worksheet.get_all_records())
+        df = df.append({'日本語': sp_list[0], '英語': sp_list[1], 'スペイン語': sp_list[2], 'カタルーニャ語': sp_list[3], 'イタリア語': sp_list[4], 'ポルトガル語': sp_list[5], 'フランス語': sp_list[6]}, ignore_index=True)
+        self.worksheet.update([df.columns.values.tolist()]+df.values.tolist())
 
         return trans_list
 
@@ -202,55 +177,48 @@ def handle_message(event):
         # ユーザーからテキストメッセージが送信されるたび、そのユーザーidに対応するWorksheetオブジェクトをworksheetに格納する
         worksheet = worksheets[profile.user_id]
     except KeyError:
-        # 辞書にインスタンスが登録されていなければ、もう一度登録する
+        # 辞書にインスタンスが登録さてていないと言われたらもう一度登録する
         worksheets[profile.user_id] = GSSWorksheet(profile.display_name)
         worksheet = worksheets[profile.user_id]
     
-
-    # 翻訳したものを返す
-    translated = worksheet.trans(text)  # trans()では、スプレッドシートへの書き込みも行う
-
-    line_bot_api.reply_message(
-        event.reply_token,  # イベントの応答に用いるトークン
-        TextSendMessage(text=f"{translated}\n\n")    
-    )
+    cell = worksheet.find(text)
 
     # 指定された言語の復習クイズを出す
     if text in langs:
-        review_quiz = worksheet.quiz(text)
+        preview_quiz = worksheet.quiz(text)
 
         line_bot_api.reply_message(
             event.reply_token,  # イベントの応答に用いるトークン
-            TextSendMessage(text=f'{text}の復習です！！\n\n{review_quiz}')    
+            TextSendMessage(text=f'{text}の復習です！！\n\n{preview_quiz}')    
         )
-    # else:
-    #     cell = worksheet.find(text) # すでにスプレッドシートにあるか確認
-    #     if cell:
-    #         result = worksheet.row_values(cell.row) # スプレッドシートにあれば、その行を取り出し
-    #         translated = []
-    #         for i,j in enumerate(result):
-    #             translated.append(f"{langs[i]}: {j}")
-    #         translated = "\n\n".join(translated)
+    else:
+        cell = worksheet.find(text) # すでにスプレッドシートにあるか確認
+        if cell:
+            result = worksheet.row_values(cell.row)
+            translated = []
+            for i,j in enumerate(result):
+                translated.append(f"{langs[i]}: {j}")
+            translated = "\n\n".join(translated)
 
-    #         line_bot_api.reply_message(
-    #             event.reply_token,  # イベントの応答に用いるトークン
-    #             TextSendMessage(text=f'前にも調べていますよー。\n\n{translated}')    
-    #         )
-    #     else:
-    #         # 翻訳したものを返す
-    #         translated = worksheet.trans(text)  # trans()では、スプレッドシートへの書き込みも行う
+            line_bot_api.reply_message(
+                event.reply_token,  # イベントの応答に用いるトークン
+                TextSendMessage(text=f'前にも調べていますよー。\n\n{translated}')    
+            )
+        else:
+            # 翻訳したものを返す
+            translated = worksheet.trans(text)
 
-    #         line_bot_api.reply_message(
-    #             event.reply_token,  # イベントの応答に用いるトークン
-    #             TextSendMessage(text=translated)    
-    #         )
+            line_bot_api.reply_message(
+                event.reply_token,  # イベントの応答に用いるトークン
+                TextSendMessage(text=translated)    
+            )
 
 
 @handler.add(FollowEvent)
 def handle_follow(event):
     profile = line_bot_api.get_profile(event.source.user_id)
 
-    # 友達登録時に、新しいworksheetのインスタンスを生成し、辞書に格納する
+    # 友達登録じに、新しいworksheetのインスタンスを生成し、辞書に格納する
     worksheets[profile.user_id] = GSSWorksheet(profile.display_name)
 
     line_bot_api.reply_message(
@@ -261,8 +229,6 @@ def handle_follow(event):
 if __name__ == "__main__":
     port = os.getenv("PORT")    # Heroku上にある環境変数
     app.run(host="0.0.0.0", port=port)
-
-
 
 """
 
@@ -463,5 +429,3 @@ def handle_message(event):
 if __name__ == "__main__":
     port = os.getenv("PORT")    # Heroku上にある環境変数
     app.run(host="0.0.0.0", port=port)
-
-"""
