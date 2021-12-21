@@ -116,10 +116,9 @@ class GSSWorksheet():
             trans_list.append(f"{language.title()}:  {translated.text}")
             sp_list.append(translated.text)
         trans_list = "\n\n".join(trans_list)
-        print(sp_list)
+        self.worksheet.append(sp_list)
 
         # 翻訳結果をスプレッドシートに入力する
-        self.input_to_sheet(sp_list)
         # df = pd.DataFrame(self.worksheet.get_all_records())
         # df = df.append({'日本語': sp_list[0], 'English': sp_list[1], 'Español': sp_list[2], 'Català': sp_list[3], 'Italiano': sp_list[4], 'Português': sp_list[5], 'Français': sp_list[6]}, ignore_index=True)
         # self.worksheet.update([df.columns.values.tolist()] + df.values.tolist())
@@ -207,12 +206,17 @@ def handle_message(event):
         worksheet = worksheets[profile.user_id]
     
 
+    line_bot_api.reply_message(
+        event.reply_token,  # イベントの応答に用いるトークン
+        TextSendMessage(text=f"{worksheet}")    
+    )
+
     # 翻訳したものを返す
     translated = worksheet.trans(text)  # trans()では、スプレッドシートへの書き込みも行う
 
     line_bot_api.reply_message(
         event.reply_token,  # イベントの応答に用いるトークン
-        TextSendMessage(text=translated)    
+        TextSendMessage(text=f"{translated}\n\n")    
     )
 
     # 指定された言語の復習クイズを出す
