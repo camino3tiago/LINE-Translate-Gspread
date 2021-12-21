@@ -50,6 +50,8 @@ class GSSWorksheet():
         ]
 
         credentials = ServiceAccountCredentials.from_json_keyfile_dict(SP_CREDENTIAL_FILE, SP_SCOPE)    # 認証情報すり合わせ
+        
+        global gc
         gc = gspread.authorize(credentials)
 
         # ここから要確認！！-------------------------------------------------------------------
@@ -78,6 +80,15 @@ class GSSWorksheet():
         self.worksheet.update_cell(1, self.IT, "Italiano")
         self.worksheet.update_cell(1, self.PT, "Português")                
         self.worksheet.update_cell(1, self.FR, "Français")
+
+    def last_row(self):
+        row_count = 1
+        while self.worksheet.cell(row_count, self.JA).value != "":
+            row_count += 1
+        return row_count
+
+    def delete_worksheet(self):
+        gc.del_worksheet(self.worksheet)
 
 
     # 翻訳部分
@@ -180,7 +191,7 @@ def handle_message(event):
         worksheet = worksheets[profile.user_id]
     except KeyError:
         # 辞書にインスタンスが登録さてていないと言われたらもう一度登録する
-        worksheets[profile.user_id] = GSSWorksheet(profile.display_name)
+        worksheets[profile.user_id] = GSSWorksheet(profile.userId)
         worksheet = worksheets[profile.user_id]
     
     cell = worksheet.find(text)
