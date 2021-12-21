@@ -206,11 +206,6 @@ def handle_message(event):
         worksheet = worksheets[profile.user_id]
     
 
-    line_bot_api.reply_message(
-        event.reply_token,  # イベントの応答に用いるトークン
-        TextSendMessage(text=f"{worksheet}")    
-    )
-
     # 翻訳したものを返す
     translated = worksheet.trans(text)  # trans()では、スプレッドシートへの書き込みも行う
 
