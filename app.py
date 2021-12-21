@@ -90,6 +90,10 @@ class GSSWorksheet():
     def delete_worksheet(self):
         gc.del_worksheet(self.worksheet)
 
+    # def input_text(self):
+    #     self.worksheet.update_cell(self.last_row(), self.JA, )
+
+
 
     # 翻訳部分
     sp_list = []
@@ -109,8 +113,8 @@ class GSSWorksheet():
 
         # 翻訳結果をスプレッドシートに入力する
         df = pd.DataFrame(self.worksheet.get_all_records())
-        df = df.append({'日本語': sp_list[0], '英語': sp_list[1], 'スペイン語': sp_list[2], 'カタルーニャ語': sp_list[3], 'イタリア語': sp_list[4], 'ポルトガル語': sp_list[5], 'フランス語': sp_list[6]}, ignore_index=True)
-        self.worksheet.update([df.columns.values.tolist()]+df.values.tolist())
+        df = df.append({'日本語': sp_list[0], 'English': sp_list[1], 'Español': sp_list[2], 'Català': sp_list[3], 'Italiano': sp_list[4], 'Português': sp_list[5], 'Français': sp_list[6]}, ignore_index=True)
+        self.worksheet.update([df.columns.values.tolist()] + df.values.tolist())
 
         return trans_list
 
@@ -190,11 +194,10 @@ def handle_message(event):
         # ユーザーからテキストメッセージが送信されるたび、そのユーザーidに対応するWorksheetオブジェクトをworksheetに格納する
         worksheet = worksheets[profile.user_id]
     except KeyError:
-        # 辞書にインスタンスが登録さてていないと言われたらもう一度登録する
-        worksheets[profile.user_id] = GSSWorksheet(profile.userId)
+        # 辞書にインスタンスが登録されていなければ、もう一度登録する
+        worksheets[profile.user_id] = GSSWorksheet(profile.user_id)
         worksheet = worksheets[profile.user_id]
     
-    cell = worksheet.find(text)
 
     # 指定された言語の復習クイズを出す
     if text in langs:
@@ -207,7 +210,7 @@ def handle_message(event):
     else:
         cell = worksheet.find(text) # すでにスプレッドシートにあるか確認
         if cell:
-            result = worksheet.row_values(cell.row)
+            result = worksheet.row_values(cell.row) # スプレッドシートにあれば、その行を取り出し
             translated = []
             for i,j in enumerate(result):
                 translated.append(f"{langs[i]}: {j}")
@@ -219,7 +222,7 @@ def handle_message(event):
             )
         else:
             # 翻訳したものを返す
-            translated = worksheet.trans(text)
+            translated = worksheet.trans(text)  # trans()では、スプレッドシートへの書き込みも行う
 
             line_bot_api.reply_message(
                 event.reply_token,  # イベントの応答に用いるトークン
