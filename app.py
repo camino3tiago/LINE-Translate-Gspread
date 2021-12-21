@@ -110,14 +110,16 @@ class GSSWorksheet():
         trans_list = []
         sp_list = []        # Spread sheet用の言語リスト
 
-        # 一言語ずつ取り出して、翻訳する
-        for lang, language in lang_dict.items():
-            translated = translator.translate(text, dest=lang)  # 翻訳する
-            trans_list.append(f"{language.title()}:  {translated.text}")
-            sp_list.append(translated.text)
-        trans_list = "\n\n".join(trans_list)
-        self.worksheet.append(sp_list)
-
+        try:
+            # 一言語ずつ取り出して、翻訳する
+            for lang, language in lang_dict.items():
+                translated = translator.translate(text, dest=lang)  # 翻訳する
+                trans_list.append(f"{language.title()}:  {translated.text}")
+                sp_list.append(translated.text)
+            trans_list = "\n\n".join(trans_list)
+            self.worksheet.append(sp_list)
+        except:
+            trans_list = "翻訳できませんでした..."
         # 翻訳結果をスプレッドシートに入力する
         # df = pd.DataFrame(self.worksheet.get_all_records())
         # df = df.append({'日本語': sp_list[0], 'English': sp_list[1], 'Español': sp_list[2], 'Català': sp_list[3], 'Italiano': sp_list[4], 'Português': sp_list[5], 'Français': sp_list[6]}, ignore_index=True)
