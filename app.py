@@ -55,7 +55,7 @@ class GSSWorksheet():
 
         try :
             #新たにワークシートを作成し、Worksheetオブジェクトをworksheetに格納します。
-            worksheet = gc.add_worksheet(title=title, rows="100", cols="7")
+            worksheet = gc.add_worksheet(title=title, rows="200", cols="7")
         except :
             #すでにワークシートが存在しているときは、そのワークシートのWorksheetオブジェクトを格納します。
             worksheet = gc.worksheet(title)

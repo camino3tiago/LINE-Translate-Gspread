@@ -1,6 +1,5 @@
 # app.pyコピー（ユーザー別ワークシート　実装用）
 
-
 # 環境変数読み込み準備
 import os
 from dotenv import load_dotenv
